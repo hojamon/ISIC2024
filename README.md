@@ -14,7 +14,7 @@ https://www.kaggle.com/code/vyacheslavbolotin/isic-2024-skin-cancer-prediction
 
 notebook 3: using LightGBM+image functions with stacking ensemble
 Private score 0.165, Public score 0.184
-Adding some noise and using early stopping
+Adding some noise to oof ImageNet predictions and using early stopping
 https://www.kaggle.com/code/richolson/isic-2024-lgbm-imagenet-v5a
 
 The result of the rank-averaged ensemble
