@@ -8,7 +8,7 @@ Solution for the Kaggle competition [ISIC 2024 - Skin Cancer Detection with 3D-T
 |---|---|---|
 | **Final submission (rank-averaged ensemble)** | **0.169** | **0.186** |
 
-**Rank: 40 / 2739teams**
+🥈 **Silver Medal**: Rank  40/ 2739 teams
 
 ## Solution Overview
 
