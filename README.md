@@ -1,29 +1,52 @@
-# ISIC2024
-Summary of my solution
+# ISIC 2024 - Skin Cancer Detection with 3D-TBP
 
-My solution is a rank-averaged ensemble of three notebooks.
+Solution for the Kaggle competition [ISIC 2024 - Skin Cancer Detection with 3D-TBP](https://www.kaggle.com/competitions/isic-2024-challenge).
 
-notebook1 : using 2 image features with stacking ensemble
-Private score 0.167 ,Public score 0.184
-This is essentially the same as the public notebook, with a few minor changes.
+## Result
 
-notebook 2: using 4 image features with stacking ensemble
-Private score 0.167, public score 0.184
-This is the same as the public notebook.
-https://www.kaggle.com/code/vyacheslavbolotin/isic-2024-skin-cancer-prediction
+| | Private | Public |
+|---|---|---|
+| **Final submission (rank-averaged ensemble)** | **0.169** | **0.186** |
 
-notebook 3: using LightGBM+image functions with stacking ensemble
-Private score 0.165, Public score 0.184
-Adding some noise to oof ImageNet predictions and using early stopping
-https://www.kaggle.com/code/richolson/isic-2024-lgbm-imagenet-v5a
+**Rank: 40 / 2739teams**
 
-The result of the rank-averaged ensemble
-Private score 0.169, public score 0.186
+## Solution Overview
 
-My thoughts during the competition
+The final submission is a **rank-averaged ensemble of three models**.
+All three are built on public notebooks with small modifications.
 
-・I thought that adding or removing a few features might not have enough impact on the score.
-・The correlation between CV and publicLB was weak, and all notebooks had a high probability of target leakage.
-・I thought all notebooks were overfitting and the variance was high (especially notebook 3).
-・I thought that the rank-average ensemble might be effective as the pAUC is only affected by the relative size of the predicted values.
-・I expected that the variance might be reduced by the ensemble of notebooks with high variance, but to be honest I don't know why it worked well.
+| # | Approach | Private | Public | Output in notebook |
+|---|---|---|---|---|
+| 1 | GBDT soft voting (LightGBM / CatBoost / XGBoost) + 2 image-model features | 0.167 | 0.184 | `submission_2.csv` |
+| 2 | GBDT soft voting (LightGBM / CatBoost / XGBoost) + 4 image-model features | 0.167 | 0.184 | `submission_3.csv` |
+| 3 | LightGBM + ImageNet-model predictions, stacked with logistic regression | 0.165 | 0.184 | `submission_1.csv` |
+
+### Model 1 & 2
+- Based on [ISIC 2024 Skin Cancer Prediction](https://www.kaggle.com/code/vyacheslavbolotin/isic-2024-skin-cancer-prediction)
+- Tabular features: raw metadata, engineered lesion features, patient-normalized features
+- Image features: predictions from EfficientNet-B0 and a pseudo-label model (Model 1), plus EVA02 and EdgeNeXt (Model 2)
+- Over/under-sampling to handle the extreme class imbalance
+
+### Model 3
+- Based on [ISIC 2024 LGBM ImageNet v5a](https://www.kaggle.com/code/richolson/isic-2024-lgbm-imagenet-v5a)
+- Added Gaussian noise to the OOF image-model predictions so that LightGBM would not rely on them too heavily
+- Early stopping based on pAUC
+- "Ugly duckling" features (how much a lesion differs from the patient's other lesions at the same location)
+
+### Ensemble
+- Each model's predictions are converted to ranks, summed, and mapped back to the [0, 1] range.
+- Because the metric (pAUC above 80% TPR) depends only on the order of predictions, rank averaging lets models with different output scales be combined directly.
+
+## Notes / Reflections
+
+- Adding or removing individual features had little impact on the score.
+- CV and Public LB were only weakly correlated. I suspected possible target leakage in all of the base notebooks, especially through the OOF image predictions.
+- All models seemed to overfit and showed high variance (Model 3 in particular).
+- I expected that ensembling several high-variance models would reduce variance, and the ensemble did beat every single model on both Private and Public LB. However, I did not verify why it worked.
+
+## Acknowledgements
+
+This solution relies heavily on the following public notebooks. Thanks to the authors.
+- [vyacheslavbolotin / ISIC 2024 Skin Cancer Prediction](https://www.kaggle.com/code/vyacheslavbolotin/isic-2024-skin-cancer-prediction)
+- [richolson / ISIC 2024 LGBM ImageNet v5a](https://www.kaggle.com/code/richolson/isic-2024-lgbm-imagenet-v5a)
+- [snnclsr / LGBM baseline with new features](https://www.kaggle.com/code/snnclsr/lgbm-baseline-with-new-features)
